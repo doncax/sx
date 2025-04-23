@@ -18,6 +18,7 @@ type Router interface {
 	PreMatch(metadata InboundContext, context tun.DirectRouteContext, timeout time.Duration, supportBypass bool) (tun.DirectRouteDestination, error)
 	ConnectionRouterEx
 	RuleSet(tag string) (RuleSet, bool)
+	RuleSets() []RuleSet
 	Rules() []Rule
 	NeedFindProcess() bool
 	NeedFindNeighbor() bool
@@ -45,6 +46,11 @@ type ConnectionRouterEx interface {
 
 type RuleSet interface {
 	Name() string
+	Type() string
+	Format() string
+	RuleCount() uint64
+	Update(ctx context.Context) error
+	UpdatedAt() time.Time
 	StartContext(ctx context.Context, startContext *HTTPStartContext) error
 	PostStart() error
 	Metadata() RuleSetMetadata
