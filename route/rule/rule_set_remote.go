@@ -77,6 +77,35 @@ func (s *RemoteRuleSet) Name() string {
 	return s.options.Tag
 }
 
+func (s *RemoteRuleSet) Format() string {
+	return s.options.Format
+}
+
+func (s *RemoteRuleSet) Type() string {
+	return C.RuleSetTypeRemote
+}
+
+func (s *RemoteRuleSet) RuleCount() uint64 {
+	return uint64(len(s.rules))
+}
+
+func (s *RemoteRuleSet) Update(ctx context.Context) error {
+	if s.updateTicker != nil {
+		s.updateTicker.Reset(s.updateInterval)
+	}
+	err := s.fetch(ctx, nil)
+	if err != nil {
+		s.logger.Error("fetch rule-set ", s.options.Tag, ": ", err)
+	} else if s.refs.Load() == 0 {
+		s.rules = nil
+	}
+	return nil
+}
+
+func (s *RemoteRuleSet) UpdatedAt() time.Time {
+	return s.lastUpdated
+}
+
 func (s *RemoteRuleSet) String() string {
 	return strings.Join(F.MapToString(s.rules), " ")
 }
