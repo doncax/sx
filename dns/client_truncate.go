@@ -19,6 +19,10 @@ func TruncateDNSMessage(request *dns.Msg, response *dns.Msg, headroom int) (*buf
 		response = &copyResponse
 		response.Truncate(maxLen)
 	}
+
+	// Some devices require DNS message compression.
+	response.Compress = true
+
 	buffer := buf.NewSize(headroom*2 + 1 + responseLen)
 	buffer.Resize(headroom, 0)
 	rawMessage, err := response.PackBuffer(buffer.FreeBytes())
