@@ -29,8 +29,8 @@ func printVersion(cmd *cobra.Command, args []string) {
 		os.Stdout.WriteString(C.Version + "\n")
 		return
 	}
-	version := "sing-box version " + C.Version + "\n\n"
-	version += "Environment: " + runtime.Version() + " " + runtime.GOOS + "/" + runtime.GOARCH + "\n"
+	version := "sing-box version " + C.Version + "\n"
+	version += "environment: " + runtime.Version() + " " + runtime.GOOS + "/" + runtime.GOARCH + "\n"
 
 	var tags string
 	var revision string
@@ -48,17 +48,17 @@ func printVersion(cmd *cobra.Command, args []string) {
 	}
 
 	if tags != "" {
-		version += "Tags: " + tags + "\n"
+		version += "tags: " + tags + "\n"
 	}
 	if revision != "" {
-		version += "Revision: " + revision + "\n"
+		version += "revision: " + revision + "\n"
 	}
 
-	if C.CGO_ENABLED {
+	/*if C.CGO_ENABLED {
 		version += "CGO: enabled\n"
 	} else {
 		version += "CGO: disabled\n"
-	}
+	}*/
 
 	os.Stdout.WriteString(version)
 }
