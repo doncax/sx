@@ -21,6 +21,7 @@ import (
 	"github.com/sagernet/sing/common/json/badjson"
 
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
 )
 
 var commandRun = &cobra.Command{
@@ -43,6 +44,20 @@ type OptionsEntry struct {
 	path    string
 	options option.Options
 }
+ 
+func isYAMLFile(path string) bool {
+	ext := strings.ToLower(filepath.Ext(path))
+	return ext == ".yaml" || ext == ".yml"
+}
+
+func convertYAMLToJSON(yamlContent []byte) ([]byte, error) {
+	var yamlData interface{}
+	err := yaml.Unmarshal(yamlContent, &yamlData)
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(yamlData)
+}
 
 func readConfigAt(path string) (*OptionsEntry, error) {
 	var (
@@ -57,7 +72,18 @@ func readConfigAt(path string) (*OptionsEntry, error) {
 	if err != nil {
 		return nil, E.Cause(err, "read config at ", path)
 	}
-	options, err := json.UnmarshalExtendedContext[option.Options](globalCtx, configContent)
+
+	var jsonContent []byte
+	if path != "stdin" && isYAMLFile(path) {
+		jsonContent, err = convertYAMLToJSON(configContent)
+		if err != nil {
+			return nil, E.Cause(err, "convert YAML to JSON at ", path)
+		}
+	} else {
+		jsonContent = configContent
+	}
+
+	options, err := json.UnmarshalExtendedContext[option.Options](globalCtx, jsonContent)
 	if err != nil {
 		return nil, E.Cause(err, "decode config at ", path)
 	}
@@ -83,10 +109,14 @@ func readConfig() ([]*OptionsEntry, error) {
 			return nil, E.Cause(err, "read config directory at ", directory)
 		}
 		for _, entry := range entries {
-			if !strings.HasSuffix(entry.Name(), ".json") || entry.IsDir() {
+			name := entry.Name()
+			if entry.IsDir() {
 				continue
 			}
-			optionsEntry, err := readConfigAt(filepath.Join(directory, entry.Name()))
+			if !strings.HasSuffix(name, ".json") && !strings.HasSuffix(name, ".yaml") && !strings.HasSuffix(name, ".yml") {
+				continue
+			}
+			optionsEntry, err := readConfigAt(filepath.Join(directory, name))
 			if err != nil {
 				return nil, err
 			}

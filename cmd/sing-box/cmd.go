@@ -65,7 +65,15 @@ func preRun(cmd *cobra.Command, args []string) {
 		}
 	}
 	if len(configPaths) == 0 && len(configDirectories) == 0 {
-		configPaths = append(configPaths, "config.json")
+		if _, err := os.Stat("config.json"); err == nil {
+			configPaths = append(configPaths, "config.json")
+		} else if _, err := os.Stat("config.yaml"); err == nil {
+			configPaths = append(configPaths, "config.yaml")
+		} else if _, err := os.Stat("config.yml"); err == nil {
+			configPaths = append(configPaths, "config.yml")
+		} else {
+			configPaths = append(configPaths, "config.json")
+		}
 	}
 	globalCtx = include.Context(service.ContextWith(globalCtx, deprecated.NewStderrManager(log.StdLogger())))
 }
