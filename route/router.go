@@ -214,8 +214,8 @@ func (r *Router) AppendTracker(tracker adapter.ConnectionTracker) {
 }
 
 func (r *Router) ResetNetwork() {
-	r.network.ResetNetwork()
-	r.dns.ResetNetwork()
+	//r.network.ResetNetwork()
+	//r.dns.ResetNetwork()
 }
 
 func (r *Router) Reload() {
